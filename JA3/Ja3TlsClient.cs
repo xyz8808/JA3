@@ -1,20 +1,21 @@
-﻿using Org.BouncyCastle.Security;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Tls;
 using Org.BouncyCastle.Tls.Crypto;
 using Org.BouncyCastle.Tls.Crypto.Impl.BC;
 using Org.BouncyCastle.Utilities;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
 
-namespace JA3
+namespace JA3Test
 {
-    internal class Ja3TlsClient : DefaultTlsClient
+    public class Ja3TlsClient : AbstractTlsClient
     {
-
         internal TlsSession m_session;
         private ServerName[] _serverNames;
 
@@ -36,10 +37,12 @@ namespace JA3
         }
 
 
-        internal Ja3TlsClient(TlsSession session)
+        public Ja3TlsClient(TlsSession session)
             : base(new BcTlsCrypto(new SecureRandom()))
         {
             this.m_session = session;
+
+
         }
 
         public IList<SignatureAndHashAlgorithm> SignatureAlgorithms { get; set; } = new[] {
@@ -55,29 +58,34 @@ namespace JA3
         };
 
         public int[] SupportedCiphers { get; set; } = new[] {
-            CipherSuite.TLS_CHACHA20_POLY1305_SHA256,
-            CipherSuite.TLS_AES_128_GCM_SHA256,
-            CipherSuite.TLS_AES_256_GCM_SHA384,
-            CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
-            CipherSuite.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
-            CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-            CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-            CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-            CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-            CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
-            CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-            CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-            CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-            CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
-            CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
-            CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
-            CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
-            CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-            CipherSuite.TLS_EMPTY_RENEGOTIATION_INFO_SCSV
+            4865,4866,4867,49195,49199,49196,49200,52393,52392,49171,49172,156,157,47,53
+            //0xc02c,
+            //0xc02b,0xc030,0xc02f,0x009f,0x009e,0xc024,0xc023,0xc028,0xc027,0xc00a,0xc009,0xc014,0xc013,0x009d,0x009c,0x003d,0x003c,0x0035,0x002f,0x000a
+            //CipherSuite.TLS_CHACHA20_POLY1305_SHA256,
+            //CipherSuite.TLS_AES_128_GCM_SHA256,
+            //CipherSuite.TLS_AES_256_GCM_SHA384,
+            //CipherSuite.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+            //CipherSuite.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+            //CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            //CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+            //CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            //CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            //CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+            //CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+            //CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+            //CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+            //CipherSuite.TLS_RSA_WITH_AES_128_GCM_SHA256,
+            //CipherSuite.TLS_RSA_WITH_AES_256_GCM_SHA384,
+            //CipherSuite.TLS_RSA_WITH_AES_128_CBC_SHA,
+            //CipherSuite.TLS_RSA_WITH_AES_256_CBC_SHA,
+            //CipherSuite.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+            //CipherSuite.TLS_EMPTY_RENEGOTIATION_INFO_SCSV
         };
 
 
         public int[] SupportedGroups { get; set; } = new[] {
+            //0
+            //0x001d,0x001e,0x0017,0x0018,0x0100,0x0101,0x0102
             NamedGroup.x25519,
             NamedGroup.secp256r1,
             NamedGroup.secp384r1,
@@ -95,7 +103,8 @@ namespace JA3
             return new Ja3TlsAuthentication(m_context);
         }
 
-        public ProtocolVersion[] SupportedVersions { get; set; } = ProtocolVersion.TLSv13.DownTo(ProtocolVersion.TLSv10);
+        public ProtocolVersion[] SupportedVersions { get; set; } = ProtocolVersion.TLSv13.DownTo(ProtocolVersion.TLSv12);
+        //public ProtocolVersion[] SupportedVersions { get; set; } = new ProtocolVersion[] { ProtocolVersion.TLSv12 };
 
 
         public override void NotifyServerVersion(ProtocolVersion serverVersion)
@@ -104,18 +113,19 @@ namespace JA3
             //Console.WriteLine("TLS client negotiated " + serverVersion);
         }
 
-        public override IList GetExternalPsks()
+        public override IList<TlsPskExternal> GetExternalPsks()
         {
             byte[] identity = Strings.ToUtf8ByteArray("client");
             TlsSecret key = Crypto.CreateSecret(Strings.ToUtf8ByteArray("TLS_TEST_PSK"));
             int prfAlgorithm = PrfAlgorithm.tls13_hkdf_sha256;
-            return TlsUtilities.VectorOfOne(new BasicTlsPskExternal(identity, key, prfAlgorithm));
+            //return (IList<TlsPskExternal>)TlsUtilities.VectorOfOne(new BasicTlsPskExternal(identity, key, prfAlgorithm));
+            return TlsUtilities.VectorOfOne(new BasicTlsPskExternal(identity, key, prfAlgorithm)).Select(o=>(TlsPskExternal)o).ToList();
         }
 
         //扩展
-        public override IDictionary GetClientExtensions()
+        public override IDictionary<int,byte[]> GetClientExtensions()
         {
-            IDictionary clientExtensions = TlsExtensionsUtilities.EnsureExtensionsInitialised(base.GetClientExtensions());
+            var clientExtensions = TlsExtensionsUtilities.EnsureExtensionsInitialised(base.GetClientExtensions());
 
             TlsExtensionsUtilities.AddMaxFragmentLengthExtension(clientExtensions, MaxFragmentLength.pow2_9);
             TlsExtensionsUtilities.AddPaddingExtension(clientExtensions, m_context.Crypto.SecureRandom.Next(16));
@@ -153,7 +163,41 @@ namespace JA3
             //clientExtensions[13172] = new byte[0];
             //17513 extensionApplicationSettings
             clientExtensions[17513] = new byte[0];
-            return clientExtensions;
+
+
+            //return clientExtensions;
+            var exts = new Dictionary<int, byte[]>();
+            /* net8
+            exts[0] = clientExtensions[0];
+            exts[10] = clientExtensions[10];
+            exts[11] = clientExtensions[11];
+            exts[13] = clientExtensions[13];
+            exts[35] = new byte[0];
+            exts[23] = new byte[0];
+            exts[65281] = clientExtensions[65281];
+            */
+
+            exts[0] = clientExtensions[0];
+            exts[5] = new byte[5] { 1,0,0,0,0};
+            exts[10] = clientExtensions[10];
+            exts[11] = clientExtensions[11];
+            exts[13] = clientExtensions[13];
+            //exts[16] = new byte[14] { 0x00, 0x0c, 0x02, 0x68, 0x32, 0x08, 0x68, 0x74, 0x74, 0x70, 0x2f, 0x31, 0x2e, 0x31 };//http2.0
+            exts[18] = new byte[0];
+
+            exts[23] = new byte[0];
+            exts[27] = new byte[3] { 0x02, 0x00, 0x02 };
+            exts[35] = new byte[0];
+            exts[43] = new byte[7] { 0x06, 0x9a, 0x9a, 0x03, 0x04, 0x03, 0x03 };
+            exts[45] = new byte[2] { 0x01, 0x01 };
+            exts[51] = new byte[43] { 0x00, 0x29, 0x4a, 0x4a, 0x00, 0x01, 0x00, 0x00, 0x1d, 0x00, 0x20, 0x65, 0x91, 0xb6, 0xec, 0x93, 0x4e, 0xc8, 0x80, 0xef, 0x22, 0xa1, 0xe1, 0x50, 0x1f, 0xbd, 0xdb, 0xfd, 0x6f, 0x21, 0xe6, 0x5d, 0x75, 0xcc, 0x49, 0xed, 0x24, 0x1a, 0xc0, 0xfd, 0xac, 0xeb, 0x64 };
+            exts[17513] = new byte[5] { 0x00, 0x03, 0x02, 0x68, 0x32 };
+            exts[65037] = new byte[0] {  };
+
+            exts[65281] = clientExtensions[65281];
+
+
+            return exts;
         }
 
         internal static TlsPskExternal[] GetPskExternalsClient(TlsClient client, int[] offeredCipherSuites)
@@ -284,19 +328,28 @@ namespace JA3
 
             return resultDict;
         }
-
-
-        protected override IList GetSupportedGroups(IList namedGroupRoles)
+        protected override IList<int> GetSupportedGroups(IList<int> namedGroupRoles)
         {
-            var supportedGroups = new ArrayList();
-            TlsUtilities.AddIfSupported(supportedGroups, Crypto, SupportedGroups);
-            return supportedGroups;
+            return SupportedGroups;
         }
+        //protected override int[] GetSupportedCipherSuites()
+        //{
+        //    //return TlsUtilities.GetSupportedCipherSuites(Crypto, DefaultCipherSuites);
+        //    var supportedGroups = new ArrayList();
+        //    TlsUtilities.AddIfSupported(supportedGroups, Crypto, SupportedGroups);
+        //    return supportedGroups;
+        //}
+        //protected override IList GetSupportedGroups(IList namedGroupRoles)
+        //{
+        //    var supportedGroups = new ArrayList();
+        //    TlsUtilities.AddIfSupported(supportedGroups, Crypto, SupportedGroups);
+        //    return supportedGroups;
+        //}
 
         protected override ProtocolVersion[] GetSupportedVersions() => SupportedVersions;
-        protected override IList GetSupportedSignatureAlgorithms() => (IList)SignatureAlgorithms;
+        protected override IList<SignatureAndHashAlgorithm> GetSupportedSignatureAlgorithms() => SignatureAlgorithms;
         protected override int[] GetSupportedCipherSuites() => SupportedCiphers;
-        protected override IList GetSniServerNames() => _serverNames;
+        protected override IList<ServerName> GetSniServerNames() => _serverNames;
 
         private static SignatureAndHashAlgorithm CreateSignatureAlgorithm(int signatureScheme)
         {
@@ -305,8 +358,25 @@ namespace JA3
             return new SignatureAndHashAlgorithm(hashAlgorithm, signatureAlgorithm);
         }
 
+        public class Ja3TlsAuthentication : TlsAuthentication
+        {
 
+            private readonly TlsContext m_context;
+            public Ja3TlsAuthentication(TlsContext context)
+            {
+                this.m_context = context;
+            }
+
+            public TlsCredentials GetClientCredentials(CertificateRequest certificateRequest)
+            {
+                return null;
+            }
+            public void NotifyServerCertificate(TlsServerCertificate serverCertificate)
+            {
+
+            }
+        }
+      
     }
-
 
 }

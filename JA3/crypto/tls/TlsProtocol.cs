@@ -2077,8 +2077,8 @@ namespace Org.BouncyCastle.Tls
              * NOTE: There are reports of servers that don't accept a zero-length extension as the last
              * one, so we write out any zero-length ones first as a best-effort workaround.
              */
-            WriteSelectedExtensions(buf, extensions, true);
-            WriteSelectedExtensions(buf, extensions, false);
+            WriteSelectedExtensions(buf, extensions, true);//XXD
+            //WriteSelectedExtensions(buf, extensions, false);
             WritePreSharedKeyExtension(buf, extensions, bindersSize);
         }
 
@@ -2112,7 +2112,7 @@ namespace Org.BouncyCastle.Tls
 
                 byte[] extension_data = extension.Value;
 
-                if (selectEmpty == (extension_data.Length == 0))
+                //if (selectEmpty == (extension_data.Length == 0))//XXD
                 {
                     TlsUtilities.CheckUint16(extension_type);
                     TlsUtilities.WriteUint16(extension_type, output);

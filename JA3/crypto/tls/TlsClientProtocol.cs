@@ -1642,7 +1642,7 @@ namespace Org.BouncyCastle.Tls
                 }
                 else
                 {
-                    m_recordStream.SetWriteVersion(ProtocolVersion.TLSv10);
+                    m_recordStream.SetWriteVersion(ProtocolVersion.TLSv12);//XXD
                 }
 
                 earliestVersion = ProtocolVersion.GetEarliestTls(supportedVersions);

@@ -5555,6 +5555,7 @@ namespace Org.BouncyCastle.Tls
         internal static OfferedPsks.BindersConfig AddPreSharedKeyToClientHello(TlsClientContext clientContext,
             TlsClient client, IDictionary<int, byte[]> clientExtensions, int[] offeredCipherSuites)
         {
+            return null;//XXD，不发送41
             if (!IsTlsV13(clientContext.ClientVersion))
                 return null;
 
