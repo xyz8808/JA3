@@ -194,10 +194,10 @@ namespace JA3Test
             exts[17513] = new byte[5] { 0x00, 0x03, 0x02, 0x68, 0x32 };
             exts[65037] = new byte[0] {  };
 
-            exts[65281] = clientExtensions[65281];
+            var exs2 = exts.OrderBy(o => Guid.NewGuid()).ToDictionary(o => o.Key, v => v.Value);
 
-
-            return exts;
+            exs2[65281] = clientExtensions[65281];
+            return exs2;
         }
 
         internal static TlsPskExternal[] GetPskExternalsClient(TlsClient client, int[] offeredCipherSuites)
