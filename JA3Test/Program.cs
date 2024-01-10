@@ -27,7 +27,7 @@ namespace JA3Test
             var url_ja3 = "https://tls.browserleaks.com/json";
 
             var handler = new Ja3MessageHandler();
-            //handler.proxy = new System.Net.WebProxy("127.0.0.1", 10809);
+            handler.proxy = new System.Net.WebProxy("127.0.0.1", 10809);
             using (var client = new HttpClient(handler))
             {
                 client.DefaultRequestHeaders.Add("Tenant-Identifier", "cQuYv9mLXHbhDLgXzZmPRspmm4gz6TmrF8kaZ9uLsZCJTLvvKhuLMfRdBCvM9pbt");
@@ -38,7 +38,7 @@ namespace JA3Test
                 client.DefaultRequestHeaders.Add("accept-encoding", "gzip, deflate, br");
                 var content = new StringContent("{\"passengers\":[{\"code\":\"ADT\",\"count\":3},{\"code\":\"CHD\",\"count\":0},{\"code\":\"INF\",\"count\":0}],\"routes\":[{\"fromAirport\":\"YVR\",\"toAirport\":\"MCO\",\"departureDate\":\"2024-02-03\",\"startDate\":\"2024-01-31\",\"endDate\":\"2024-02-06\"}],\"currency\":\"CAD\",\"fareTypeCategories\":null,\"isManageBooking\":false,\"languageCode\":\"en-us\"}",Encoding.UTF8, "application/json");
                 //var str3 = client.PostAsync("https://api-production-lynxair-booksecure.ezyflight.se/api/v1/Availability/SearchShop", content).Result.Content.ReadAsStringAsync().Result;
-                var str = client.GetStringAsync("https://www.nokair.com/ManageBooking/Login").Result;
+                //var str = client.GetStringAsync("https://www.nokair.com/ManageBooking/Login").Result;
                 var str2 = client.GetStringAsync(url_ja3).Result;
                 Console.WriteLine(str2);
             }

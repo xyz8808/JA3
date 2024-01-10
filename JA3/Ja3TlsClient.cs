@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Org.BouncyCastle.Asn1.Ocsp;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Tls;
 using Org.BouncyCastle.Tls.Crypto;
@@ -119,20 +120,28 @@ namespace JA3Test
             TlsSecret key = Crypto.CreateSecret(Strings.ToUtf8ByteArray("TLS_TEST_PSK"));
             int prfAlgorithm = PrfAlgorithm.tls13_hkdf_sha256;
             //return (IList<TlsPskExternal>)TlsUtilities.VectorOfOne(new BasicTlsPskExternal(identity, key, prfAlgorithm));
-            return TlsUtilities.VectorOfOne(new BasicTlsPskExternal(identity, key, prfAlgorithm)).Select(o=>(TlsPskExternal)o).ToList();
+            return TlsUtilities.VectorOfOne(new BasicTlsPskExternal(identity, key, prfAlgorithm)).Select(o => (TlsPskExternal)o).ToList();
         }
 
         //扩展
-        public override IDictionary<int,byte[]> GetClientExtensions()
+        public override IDictionary<int, byte[]> GetClientExtensions()
         {
+            //chrome:771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-5-10-11-13-16-18-23-27-35-43-45-51-17513-65037-65281,29-23-24,0
             var clientExtensions = TlsExtensionsUtilities.EnsureExtensionsInitialised(base.GetClientExtensions());
-            
+
             TlsExtensionsUtilities.AddMaxFragmentLengthExtension(clientExtensions, MaxFragmentLength.pow2_9);
             TlsExtensionsUtilities.AddPaddingExtension(clientExtensions, m_context.Crypto.SecureRandom.Next(16));
             TlsExtensionsUtilities.AddTruncatedHmacExtension(clientExtensions);
             TlsExtensionsUtilities.AddRecordSizeLimitExtension(clientExtensions, 16385);
             TlsExtensionsUtilities.AddPaddingExtension(clientExtensions, 0);
-            //TlsExtensionsUtilities.AddCompressCertificateExtension(clientExtensions, [CertificateCompressionAlgorithm.brotli]);
+            TlsExtensionsUtilities.AddCompressCertificateExtension(clientExtensions, [2]);
+            TlsExtensionsUtilities.AddSupportedVersionsExtensionClient(clientExtensions, SupportedVersions);
+            TlsExtensionsUtilities.AddStatusRequestExtension(clientExtensions, new CertificateStatusRequest(1, new OcspStatusRequest(new List<ResponderID>(), null)));
+            TlsExtensionsUtilities.AddExtendedMasterSecretExtension(clientExtensions);
+            TlsExtensionsUtilities.AddPskKeyExchangeModesExtension(clientExtensions, new short[] { 1, 1 });
+            TlsExtensionsUtilities.AddKeyShareClientHello(clientExtensions, new List<KeyShareEntry>() { new KeyShareEntry(29, Encoding.ASCII.GetBytes(Guid.NewGuid().ToString()).Take(32).ToArray()) });
+            //TlsExtensionsUtilities.AddStatusRequestaddV2Extension(clientExtensions,  new List<CertificateStatusRequestItemV2>() { new CertificateStatusRequestItemV2(1,new OcspStatusRequest(new List<ResponderID>(),null)) });
+            //TlsExtensionsUtilities.AddEmptyExtensionData(clientExtensions, 0);
             //TlsExtensionsUtilities.enc(clientExtensions, [2]);
 
             bool offeringTlsV13Plus = false;
@@ -180,23 +189,37 @@ namespace JA3Test
             */
 
             exts[0] = clientExtensions[0];
-            exts[5] = new byte[5] { 1,0,0,0,0};
+            //exts[5] = new byte[5] { 1, 0, 0, 0, 0 };//status_request
+            exts[5] = clientExtensions[5];
             exts[10] = clientExtensions[10];
             exts[11] = clientExtensions[11];
             exts[13] = clientExtensions[13];
             //exts[16] = new byte[14] { 0x00, 0x0c, 0x02, 0x68, 0x32, 0x08, 0x68, 0x74, 0x74, 0x70, 0x2f, 0x31, 0x2e, 0x31 };//http2.0
-            exts[18] = new byte[0];
+            exts[18] = new byte[0];//signed_certificate_timestamp
 
-            exts[23] = new byte[0];
+            exts[23] = clientExtensions[23];//extended_master_secret
+
+            //exts[23] = new byte[0];//extended_master_secret
             //compress_certificate=27
-            //exts[27] = new byte[] {0x02,0,0x02 };
-            exts[27] = new byte[] { 0x02,0,0x02};
-            //exts[27] = clientExtensions[27];
-            exts[35] = new byte[0];
-            exts[43] = new byte[7] { 0x06, 0x9a, 0x9a, 0x03, 0x04, 0x03, 0x03 };
-            exts[45] = new byte[2] { 0x01, 0x01 };
-            exts[51] = new byte[43] { 0x00, 0x29, 0x4a, 0x4a, 0x00, 0x01, 0x00, 0x00, 0x1d, 0x00, 0x20, 0x65, 0x91, 0xb6, 0xec, 0x93, 0x4e, 0xc8, 0x80, 0xef, 0x22, 0xa1, 0xe1, 0x50, 0x1f, 0xbd, 0xdb, 0xfd, 0x6f, 0x21, 0xe6, 0x5d, 0x75, 0xcc, 0x49, 0xed, 0x24, 0x1a, 0xc0, 0xfd, 0xac, 0xeb, 0x64 };
-            exts[17513] = new byte[5] { 0x00, 0x03, 0x02, 0x68, 0x32 };
+            exts[27] = clientExtensions[27];
+            //exts[27] = new byte[3] { 0x02, 0x00, 0x02 };
+            exts[35] = new byte[0];//session_ticket 
+            /*
+             * 
+             * Supported Versions length: 6
+                Supported Version: Reserved (GREASE) (0x0a0a)
+                Supported Version: TLS 1.3 (0x0304)
+                Supported Version: TLS 1.2 (0x0303)
+             */
+
+            exts[43] = clientExtensions[43];
+            //exts[43] = new byte[7] { 0x06, 0x9a, 0x9a, 0x03, 0x04, 0x03, 0x03 };//43supported_versions
+            exts[45] = clientExtensions[45];
+            //exts[45] = new byte[2] { 0x01, 0x01 };//psk_key_exchange_modes
+            //exts[51] = new byte[43] { 0x00, 0x29, 0x4a, 0x4a, 0x00, 0x01, 0x00, 0x00, 0x1d, 0x00, 0x20, 0x65, 0x91, 0xb6,//key_share
+            //    0xec, 0x93, 0x4e, 0xc8, 0x80, 0xef, 0x22, 0xa1, 0xe1, 0x50, 0x1f, 0xbd, 0xdb, 0xfd, 0x6f, 0x21, 0xe6, 0x5d, 0x75, 0xcc, 0x49, 0xed, 0x24, 0x1a, 0xc0, 0xfd, 0xac, 0xeb, 0x64 };
+            exts[51] = clientExtensions[51];
+            exts[17513] = new byte[5] { 0x00, 0x03, 0x02, 0x68, 0x32 };// application_settings
             //encrypted_client_hello=65037
             //exts[65037] = new byte[0] { };
 
@@ -230,7 +253,7 @@ namespace JA3Test
 
             var exs2 = exts.OrderBy(o => Guid.NewGuid()).ToDictionary(o => o.Key, v => v.Value);
 
-            exs2[65281] = clientExtensions[65281];
+            exs2[65281] = clientExtensions[65281];//renegotiation_info
             return exs2;
         }
 
@@ -410,7 +433,7 @@ namespace JA3Test
 
             }
         }
-      
+
     }
 
 }
