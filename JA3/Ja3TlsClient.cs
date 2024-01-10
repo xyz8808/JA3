@@ -126,12 +126,14 @@ namespace JA3Test
         public override IDictionary<int,byte[]> GetClientExtensions()
         {
             var clientExtensions = TlsExtensionsUtilities.EnsureExtensionsInitialised(base.GetClientExtensions());
-
+            
             TlsExtensionsUtilities.AddMaxFragmentLengthExtension(clientExtensions, MaxFragmentLength.pow2_9);
             TlsExtensionsUtilities.AddPaddingExtension(clientExtensions, m_context.Crypto.SecureRandom.Next(16));
             TlsExtensionsUtilities.AddTruncatedHmacExtension(clientExtensions);
             TlsExtensionsUtilities.AddRecordSizeLimitExtension(clientExtensions, 16385);
             TlsExtensionsUtilities.AddPaddingExtension(clientExtensions, 0);
+            //TlsExtensionsUtilities.AddCompressCertificateExtension(clientExtensions, [CertificateCompressionAlgorithm.brotli]);
+            //TlsExtensionsUtilities.enc(clientExtensions, [2]);
 
             bool offeringTlsV13Plus = false;
             ProtocolVersion[] supportedVersions = GetProtocolVersions();
@@ -186,13 +188,45 @@ namespace JA3Test
             exts[18] = new byte[0];
 
             exts[23] = new byte[0];
-            exts[27] = new byte[3] { 0x02, 0x00, 0x02 };
+            //compress_certificate=27
+            //exts[27] = new byte[] {0x02,0,0x02 };
+            exts[27] = new byte[] { 0x02,0,0x02};
+            //exts[27] = clientExtensions[27];
             exts[35] = new byte[0];
             exts[43] = new byte[7] { 0x06, 0x9a, 0x9a, 0x03, 0x04, 0x03, 0x03 };
             exts[45] = new byte[2] { 0x01, 0x01 };
             exts[51] = new byte[43] { 0x00, 0x29, 0x4a, 0x4a, 0x00, 0x01, 0x00, 0x00, 0x1d, 0x00, 0x20, 0x65, 0x91, 0xb6, 0xec, 0x93, 0x4e, 0xc8, 0x80, 0xef, 0x22, 0xa1, 0xe1, 0x50, 0x1f, 0xbd, 0xdb, 0xfd, 0x6f, 0x21, 0xe6, 0x5d, 0x75, 0xcc, 0x49, 0xed, 0x24, 0x1a, 0xc0, 0xfd, 0xac, 0xeb, 0x64 };
             exts[17513] = new byte[5] { 0x00, 0x03, 0x02, 0x68, 0x32 };
-            exts[65037] = new byte[0] {  };
+            //encrypted_client_hello=65037
+            //exts[65037] = new byte[0] { };
+
+
+            /*
+             * 
+             *  Extension: encrypted_client_hello (len=186)
+                Type: encrypted_client_hello (65037)
+                Length: 186
+                Client Hello type: Outer Client Hello (0)
+                Cipher Suite: HKDF-SHA256/AES-128-GCM
+                    KDF Id: HKDF-SHA256 (1)
+                    AEAD Id: AES-128-GCM (1)
+                Config Id: 234
+                Enc length: 32
+                Enc: 98930f558c729cc8ed7cbeba1e9277a4682ca8b07a8c4502b20331f3fe6ddb29
+                Payload length: 144
+                Payload [truncated]: 
+             *
+             * 
+             * 
+             */
+            exts[65037] = new byte[] {
+                0x00,// Outer Client Hello (0)
+                0x00,0x01, 0x00, 0x01,//HKDF-SHA256/AES-128-GCM
+                0xea,//Config Id: 234
+                0x00,0x20,//Enc length: 32
+                0x98, 0x93, 0x0f, 0x55, 0x8c, 0x72, 0x9c, 0xc8, 0xed, 0x7c, 0xbe, 0xba, 0x1e, 0x92, 0x77, 0xa4, 0x68, 0x2c, 0xa8, 0xb0, 0x7a, 0x8c, 0x45, 0x02, 0xb2, 0x03, 0x31, 0xf3, 0xfe, 0x6d, 0xdb, 0x29,//Enc
+                0x00,0x00//Payload length: 0
+            };
 
             var exs2 = exts.OrderBy(o => Guid.NewGuid()).ToDictionary(o => o.Key, v => v.Value);
 
