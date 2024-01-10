@@ -1,4 +1,5 @@
-﻿using JA3;
+﻿using HttpTwo;
+using JA3;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -43,12 +44,20 @@ namespace JA3Test
                 Console.WriteLine(str2);
             }
             Console.WriteLine("--".PadRight(30));
-            using (var client = new HttpClient())
+            //using (var client = new HttpClient())
+            //{
+            //    var str2 = client.GetStringAsync(url_ja3).Result;
+            //    Console.WriteLine(str2);
+            //}
+            var handler2 = new Http2MessageHandler()
+            {
+                Proxy = new System.Net.WebProxy("127.0.0.1", 10809)
+            };
+            using (var client = new HttpClient(handler2))
             {
                 var str2 = client.GetStringAsync(url_ja3).Result;
                 Console.WriteLine(str2);
             }
-
 
             var client2 = new HttpClient();
             var proxy = client2.GetStringAsync("https://spider.xxklf.com/proxy/api/proxy/get?name=5J").Result;

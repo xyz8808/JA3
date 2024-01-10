@@ -19,7 +19,7 @@ namespace JA3Test
     {
         internal TlsSession m_session;
         private ServerName[] _serverNames;
-
+        public bool EnableHttp2 { get; set; } = false;
 
 
         public string[] ServerNames
@@ -194,7 +194,8 @@ namespace JA3Test
             exts[10] = clientExtensions[10];
             exts[11] = clientExtensions[11];
             exts[13] = clientExtensions[13];
-            //exts[16] = new byte[14] { 0x00, 0x0c, 0x02, 0x68, 0x32, 0x08, 0x68, 0x74, 0x74, 0x70, 0x2f, 0x31, 0x2e, 0x31 };//http2.0
+            if(EnableHttp2)
+                 exts[16] = new byte[14] { 0x00, 0x0c, 0x02, 0x68, 0x32, 0x08, 0x68, 0x74, 0x74, 0x70, 0x2f, 0x31, 0x2e, 0x31 };//http2.0
             exts[18] = new byte[0];//signed_certificate_timestamp
 
             exts[23] = clientExtensions[23];//extended_master_secret

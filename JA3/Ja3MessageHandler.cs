@@ -23,6 +23,7 @@ namespace JA3
     {
         public CookieContainer CookieContainer { get; set; } = new CookieContainer();
         public bool UseCookies { get; set; } = true;
+        public bool EnableHttp2 { get; set; } = false;
 
         public bool AllowAutoRedirect { get; set; } = true;
         public WebProxy proxy { get; set; }
@@ -38,6 +39,7 @@ namespace JA3
         {
 
             cl.ServerNames = new[] { uri.Host };
+            cl.EnableHttp2 = EnableHttp2;
             var s = await ConnectToProxy();
             if (uri.Scheme == "https")
             {
